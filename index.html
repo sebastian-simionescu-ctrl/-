@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parkoor Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-container">
+    <header class="topbar">
+      <h1>Open-World Duel</h1>
+      <div class="controls">P1: WASD move · E gather · F attack — P2: Arrows move · K gather · L attack</div>
+    </header>
+
+    <div class="game-main">
+      <canvas id="gameCanvas" width="900" height="600"></canvas>
+
+      <aside class="hud">
+        <section class="player-hud" id="p1Hud">
+          <h2>Player 1</h2>
+          <div>HP: <span id="p1Hp">100</span></div>
+          <div>Inventory:</div>
+          <ul id="p1Inv"></ul>
+          <div class="craft">
+            <button id="p1CraftSword">Craft Sword (Wood 5, Stone 2)</button>
+          </div>
+        </section>
+
+        <section class="player-hud" id="p2Hud">
+          <h2>Player 2</h2>
+          <div>HP: <span id="p2Hp">100</span></div>
+          <div>Inventory:</div>
+          <ul id="p2Inv"></ul>
+          <div class="craft">
+            <button id="p2CraftSword">Craft Sword (Wood 5, Stone 2)</button>
+          </div>
+        </section>
+
+        <section class="game-logs">
+          <h3>Logs</h3>
+          <div id="logs" class="logs"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
