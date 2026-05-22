@@ -1,19 +1,26 @@
-# Parkoor Runner
+# 2D Combat RPG
 
-A simple HTML5 parkour-style runner game built with Canvas, CSS, and JavaScript.
+A simple turn-based combat RPG built with HTML, CSS, and JavaScript.
 
-## How to play
+## Project structure
 
-- Open `index.html` in your browser.
-- Press `Space` or `↑` to jump.
-- Avoid obstacles and collect points as your score grows.
+- `index.html` — UI layout for world exploration, combat, inventory, and shop.
+- `style.css` — responsive RPG-style visuals and layout.
+- `script.js` — game logic, player and enemy classes, combat manager, and UI binding.
+- `data/enemies.js` — enemy definitions, types, and AI abilities.
+- `data/items.js` — items, consumables, and equipment.
+- `data/skills.js` — special combat abilities and cooldowns.
 
-## Files
+## Features
 
-- `index.html` — game page structure
-- `style.css` — page and canvas styling
-- `game.js` — game logic, rendering, and input handling
+- Player stats: HP, Attack, Defense, Speed, Level, XP.
+- Inventory and equipment slots for weapon and armor.
+- Turn-based combat with Attack, Defend, Use Item, and Special Move actions.
+- Enemy AI with weak, normal, elite, and boss variants.
+- Combat log, health bars, XP, gold, and loot rewards.
+- Simple overworld map with selectable regions and random encounters.
+- Shop system for buying items and equipment.
 
 ## Run locally
 
-Open `index.html` directly in the browser, or use a static server for faster development.
+Open `index.html` in the browser or serve the folder with a static server for full module support.

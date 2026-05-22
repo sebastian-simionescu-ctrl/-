@@ -1,9 +1,17 @@
 :root {
   --bg: #0d1117;
-  --ground: #1f6feb;
-  --player: #10a37f;
-  --obstacle: #f85149;
+  --panel: rgba(11, 18, 32, 0.95);
+  --panel-border: rgba(29, 57, 84, 0.8);
+  --accent: #58a6ff;
+  --button-bg: #58a6ff;
+  --button-text: #0b1220;
+  --danger: #f85149;
   --text: #c9d1d9;
+  --muted: #8b9eb5;
+  --surface: rgba(16, 23, 38, 0.92);
+  --status-color: #58a6ff;
+  --healthbar-start: #10a37f;
+  --healthbar-end: #58a6ff;
 }
 
 * {
@@ -12,94 +20,391 @@
   padding: 0;
 }
 
+html, body {
+  min-height: 100%;
+}
+
 body {
   font-family: Inter, system-ui, sans-serif;
-  background: radial-gradient(circle at top, #161b22 0%, #0d1117 100%);
+  min-height: 100%;
+  background-color: var(--bg);
   color: var(--text);
-  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.background-layer {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 0.6s ease;
+  opacity: 1;
+  z-index: -1;
+}
+
+.background-layer.fade-out {
+  opacity: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .game-container {
-  width: min(100%, 900px);
-  text-align: center;
+  width: min(100%, 1200px);
+  position: relative;
+  z-index: 1;
 }
 
-.info {
-  margin-bottom: 14px;
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 18px;
 }
 
-canvas {
-  width: 100%;
-  max-width: 900px;
-  border: 4px solid #30363d;
-  border-radius: 14px;
-  background: linear-gradient(180deg, #0c131c 50%, #111827 100%);
-  display: block;
+.panel-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.topbar h1 {
+  font-size: clamp(1.8rem, 2.2vw, 2.4rem);
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--muted);
+  max-width: 45rem;
 }
 
 #status {
-  color: #58a6ff;
-}
-
-/* Layout for open-world game */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  color: var(--status-color);
+  font-weight: 600;
+  margin-top: 6px;
 }
 
 .game-main {
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 12px;
+  grid-template-columns: minmax(260px, 320px) minmax(420px, 1fr) minmax(260px, 300px);
+  gap: 18px;
   align-items: start;
 }
 
-.hud {
-  background: linear-gradient(180deg,#0b1220,#071018);
-  border: 2px solid #222;
-  padding: 12px;
-  border-radius: 10px;
-  color: var(--text);
-  height: fit-content;
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);
 }
 
-.player-hud {
+.panel h2,
+.panel h3 {
   margin-bottom: 12px;
 }
 
-.player-hud h2 {
-  margin-bottom: 6px;
-  font-size: 16px;
+.world-panel .locations {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
-.player-hud ul {
-  list-style: none;
-  padding-left: 8px;
-  margin-bottom: 6px;
+.location-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.player-hud li { font-size: 14px; }
+.location-card button {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
 
-.craft button {
+.area-summary {
+  color: var(--muted);
+}
+
+.area-summary p {
+  margin: 10px 0 16px;
+  line-height: 1.6;
+}
+
+.primary-button,
+.secondary-button,
+.combat-actions button,
+.shop-panel button {
+  border-radius: 12px;
+  border: none;
+  padding: 12px 14px;
+  min-width: 110px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primary-button {
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+
+.secondary-button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.combat-actions button:hover,
+.shop-panel button:hover {
+  transform: translateY(-1px);
+}
+
+.combat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.battle-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.entity-status {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.entity-status .label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.hp-bar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 16px;
+  margin-bottom: 12px;
+}
+
+.hp-bar span {
   display: block;
   width: 100%;
-  padding: 6px 8px;
-  background: #0f1724;
-  border: 1px solid #274056;
-  color: var(--text);
-  border-radius: 6px;
-  cursor: pointer;
+  min-width: 4px;
+  height: 100%;
+  background: linear-gradient(90deg, var(--healthbar-start), var(--healthbar-end));
 }
 
-.logs { max-height: 160px; overflow:auto; font-size:13px; background:#061017; padding:8px; border-radius:6px; }
+.stats {
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.5;
+}
 
-@media (max-width: 880px) {
-  .game-main { grid-template-columns: 1fr; }
-  .hud { order: 2; }
+.combat-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.combat-actions button {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.enemy-card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 2px solid var(--accent);
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.3s ease;
+}
+
+.enemy-card-panel {
+  margin-bottom: 18px;
+}
+
+.enemy-card.card-hidden {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.enemy-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.enemy-card__portrait {
+  min-width: 120px;
+  min-height: 120px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.enemy-card__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(0.98);
+  transition: transform 0.6s ease;
+}
+
+.enemy-card.visible .enemy-card__portrait img {
+  transform: scale(1.04);
+}
+
+.enemy-card__content {
+  display: grid;
+  gap: 10px;
+}
+
+.enemy-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.enemy-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.enemy-card__type,
+.enemy-card__rarity {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.enemy-card__rarity {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.enemy-card__hp-bar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 14px;
+}
+
+.enemy-card__hp-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--healthbar-start), var(--healthbar-end));
+  transition: width 0.25s ease;
+}
+
+.enemy-card__hp-text {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.log-panel {
+  flex: 1;
+}
+
+.logs {
+  min-height: 240px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 14px;
+  overflow-y: auto;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.logs div {
+  margin-bottom: 8px;
+}
+
+.side-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.item-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.item-list li,
+.shop-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.item-list button,
+.shop-item button {
+  margin-top: 10px;
+  width: 100%;
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.equipment div {
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.shop-stats {
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+@media (max-width: 1080px) {
+  .game-main {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-header {
+    grid-template-columns: 1fr;
+  }
 }

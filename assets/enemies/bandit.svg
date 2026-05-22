@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <rect width="180" height="180" rx="24" fill="#7a543c" />
+  <text x="50%" y="35%" fill="#fff" font-size="24" font-family="Arial, sans-serif" text-anchor="middle">Bandit</text>
+  <text x="50%" y="55%" fill="#fff" font-size="18" font-family="Arial, sans-serif" text-anchor="middle">Raider</text>
+</svg>

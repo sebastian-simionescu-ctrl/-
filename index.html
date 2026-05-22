@@ -3,48 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parkoor Game</title>
+  <title>2D Combat RPG</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="backgroundLayer" class="background-layer"></div>
+  <audio id="bgMusic" loop preload="none"></audio>
   <div class="game-container">
     <header class="topbar">
-      <h1>Open-World Duel</h1>
-      <div class="controls">P1: WASD move · E gather · F attack — P2: Arrows move · K gather · L attack</div>
+      <div>
+        <h1>2D Combat RPG</h1>
+        <p class="subtitle">Explore the overworld, battle enemies, and upgrade your hero.</p>
+      </div>
+      <div class="panel-controls">
+        <button class="secondary-button" onclick="togglePanel('world-panel')">Map</button>
+        <button class="secondary-button" onclick="togglePanel('inventory-panel')">Inventory</button>
+        <button class="secondary-button" onclick="togglePanel('shop-panel')">Shop</button>
+        <button class="secondary-button" onclick="togglePanel('combat-panel')">Combat</button>
+      </div>
+      <div id="status">Ready for adventure</div>
     </header>
 
     <div class="game-main">
-      <canvas id="gameCanvas" width="900" height="600"></canvas>
+      <section id="world-panel" class="panel world-panel">
+        <h2>World Map</h2>
+        <div class="locations" id="locationList"></div>
+        <div class="area-summary">
+          <h3 id="areaName">Choose a region</h3>
+          <p id="areaDescription">Select a location to travel, explore, and find enemies or merchants.</p>
+          <div id="encounterInfo" class="encounter-info">Enemy types will appear here.</div>
+          <button id="travelButton" class="primary-button" disabled>Travel Here</button>
+          <button id="moveButton" class="secondary-button" disabled>Move Forward</button>
+        </div>
+      </section>
 
-      <aside class="hud">
-        <section class="player-hud" id="p1Hud">
-          <h2>Player 1</h2>
-          <div>HP: <span id="p1Hp">100</span></div>
-          <div>Inventory:</div>
-          <ul id="p1Inv"></ul>
-          <div class="craft">
-            <button id="p1CraftSword">Craft Sword (Wood 5, Stone 2)</button>
+      <section id="combat-panel" class="panel combat-panel">
+        <div class="battle-header">
+          <div class="entity-status player-status">
+            <span class="label">Hero</span>
+            <div class="hp-bar"><span id="playerHpBar"></span></div>
+            <div class="stats" id="playerStats"></div>
           </div>
+          <div class="entity-status enemy-status">
+            <span class="label">Enemy</span>
+            <div class="hp-bar"><span id="enemyHpBar"></span></div>
+            <div class="stats" id="enemyStats">No enemy encountered</div>
+          </div>
+        </div>
+
+        <div id="enemy-card-panel" class="enemy-card-panel hidden">
+          <div class="enemy-card card-hidden" id="enemyCard">
+          <div class="enemy-card__portrait" id="enemyPortraitContainer">
+            <img id="enemy-image" src="" alt="" />
+          </div>
+          <div class="enemy-card__content">
+            <div class="enemy-card__header">
+              <div>
+                <div class="enemy-card__name" id="enemyName">Enemy Name</div>
+                <div class="enemy-card__type" id="enemyType">Enemy Type</div>
+              </div>
+              <div class="enemy-card__rarity" id="enemyRarity">Normal</div>
+            </div>
+            <div class="enemy-card__hp-bar">
+              <span id="enemyCardHpBar"></span>
+            </div>
+            <div class="enemy-card__hp-text" id="enemyCardHpText">0 / 0 HP</div>
+          </div>
+        </div>
+        </div>
+
+        <div class="combat-actions">
+          <button id="attackButton">Attack</button>
+          <button id="defendButton">Defend</button>
+          <button id="itemButton">Use Item</button>
+          <button id="specialButton">Special Move</button>
+        </div>
+
+        <div class="log-panel">
+          <h3>Combat Log</h3>
+          <div id="battleLog" class="logs"></div>
+        </div>
+      </section>
+
+      <aside class="panel side-panel">
+        <section id="inventory-panel" class="inventory-panel hidden">
+          <h2>Inventory</h2>
+          <div id="playerEquipment" class="equipment">
+            <div><strong>Weapon:</strong> <span id="weaponSlot">None</span></div>
+            <div><strong>Armor:</strong> <span id="armorSlot">None</span></div>
+          </div>
+          <h3>Items</h3>
+          <ul id="inventoryList" class="item-list"></ul>
         </section>
 
-        <section class="player-hud" id="p2Hud">
-          <h2>Player 2</h2>
-          <div>HP: <span id="p2Hp">100</span></div>
-          <div>Inventory:</div>
-          <ul id="p2Inv"></ul>
-          <div class="craft">
-            <button id="p2CraftSword">Craft Sword (Wood 5, Stone 2)</button>
-          </div>
-        </section>
-
-        <section class="game-logs">
-          <h3>Logs</h3>
-          <div id="logs" class="logs"></div>
+        <section id="shop-panel" class="shop-panel hidden">
+          <h2>Shop</h2>
+          <div class="shop-stats">Gold: <span id="playerGold">0</span></div>
+          <ul id="shopList" class="item-list"></ul>
         </section>
       </aside>
     </div>
   </div>
 
-  <script src="game.js"></script>
+  <script src="data/enemies.js"></script>
+  <script src="data/items.js"></script>
+  <script src="data/skills.js"></script>
+  <script src="data/weapons.js"></script>
+  <script src="data/themes.js"></script>
+  <script src="data/locations.js"></script>
+  <script src="components/enemyCard.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
