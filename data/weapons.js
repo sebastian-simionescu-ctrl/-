@@ -8,7 +8,7 @@ const WEAPONS = [
     specialEffect: null,
     rarity: 'common',
     color: '#a0a0a0',
-    icon: 'https://via.placeholder.com/84/8b8b8b/ffffff?text=Rusty+Sword',
+    icon: 'assets/weapons/rusty_sword.svg',
     price: 40,
   },
   {
@@ -20,7 +20,7 @@ const WEAPONS = [
     specialEffect: { type: 'armor_break', strength: 3, duration: 2, chance: 0.25 },
     rarity: 'rare',
     color: '#d99b47',
-    icon: 'https://via.placeholder.com/84/9b522a/ffffff?text=Raider+Axe',
+    icon: 'assets/weapons/raider_axe.svg',
     price: 95,
   },
   {
@@ -32,7 +32,7 @@ const WEAPONS = [
     specialEffect: { type: 'bleed', strength: 4, duration: 3, chance: 0.3 },
     rarity: 'rare',
     color: '#e3b75f',
-    icon: 'https://via.placeholder.com/84/cda63d/ffffff?text=Desert+Bow',
+    icon: 'assets/weapons/desert_bow.svg',
     price: 110,
   },
   {
@@ -44,7 +44,7 @@ const WEAPONS = [
     specialEffect: { type: 'stun', duration: 1, chance: 0.2 },
     rarity: 'epic',
     color: '#8cc4ff',
-    icon: 'https://via.placeholder.com/84/5d92d2/ffffff?text=Frost+Staff',
+    icon: 'assets/weapons/frost_staff.svg',
     price: 155,
   },
   {
@@ -56,7 +56,7 @@ const WEAPONS = [
     specialEffect: { type: 'armor_break', strength: 5, duration: 2, chance: 0.3 },
     rarity: 'legendary',
     color: '#ff5dc4',
-    icon: 'https://via.placeholder.com/84/dc4ba3/ffffff?text=Plasma+Blade',
+    icon: 'assets/weapons/plasma_blade.svg',
     price: 240,
   },
   {
@@ -68,7 +68,7 @@ const WEAPONS = [
     specialEffect: { type: 'bleed', strength: 3, duration: 4, chance: 0.35 },
     rarity: 'rare',
     color: '#5cb76e',
-    icon: 'https://via.placeholder.com/84/4b8f5c/ffffff?text=Hunter+Dagger',
+    icon: 'assets/weapons/hunter_dagger.svg',
     price: 120,
   },
   {
@@ -80,7 +80,7 @@ const WEAPONS = [
     specialEffect: { type: 'burn', strength: 3, duration: 3, chance: 0.25 },
     rarity: 'epic',
     color: '#c1a2ff',
-    icon: 'https://via.placeholder.com/84/8d74d8/ffffff?text=Crystal+Wand',
+    icon: 'assets/weapons/crystal_wand.svg',
     price: 170,
   },
   {
@@ -92,7 +92,7 @@ const WEAPONS = [
     specialEffect: { type: 'stun', duration: 1, chance: 0.22 },
     rarity: 'epic',
     color: '#4f81d4',
-    icon: 'https://via.placeholder.com/84/3b64a2/ffffff?text=Storm+Spear',
+    icon: 'assets/weapons/storm_spear.svg',
     price: 185,
   },
 ];

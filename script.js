@@ -536,6 +536,13 @@ const attackButton = document.getElementById('attackButton');
 const defendButton = document.getElementById('defendButton');
 const itemButton = document.getElementById('itemButton');
 const specialButton = document.getElementById('specialButton');
+const swingBarPanel = document.getElementById('swing-bar-panel');
+const swingBar = document.getElementById('swing-bar');
+const hitZone = document.getElementById('hit-zone');
+const critZone = document.getElementById('crit-zone');
+const marker = document.getElementById('marker');
+
+let swingActive = false;
 
 const AREAS = LOCATIONS;
 
@@ -649,10 +656,10 @@ function updateUi() {
 
 function updateButtons() {
   const inCombat = combatManager.inCombat;
-  attackButton.disabled = !inCombat;
-  defendButton.disabled = !inCombat;
-  itemButton.disabled = !inCombat || Object.values(player.inventory).every(value => value <= 0);
-  specialButton.disabled = !inCombat || !player.skills.some(skill => skill.canUse());
+  attackButton.disabled = !inCombat || swingActive;
+  defendButton.disabled = !inCombat || swingActive;
+  itemButton.disabled = !inCombat || swingActive || Object.values(player.inventory).every(value => value <= 0);
+  specialButton.disabled = !inCombat || swingActive || !player.skills.some(skill => skill.canUse());
 }
 
 function applyTheme(theme) {
@@ -694,17 +701,443 @@ function updateEncounterInfo(location) {
   encounterInfo.textContent = `Enemies: ${location.enemyTypes.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(', ')}`;
 }
 
-function togglePanel(panelId) {
-  const panelIds = ['world-panel', 'inventory-panel', 'shop-panel', 'combat-panel'];
-  panelIds.forEach(id => {
-    const panel = document.getElementById(id);
-    if (!panel) return;
-    if (id === panelId) {
-      panel.classList.toggle('hidden');
+function openSwingBar() {
+  if (!swingBarPanel || !swingBar) return;
+  swingBarPanel.classList.remove('hidden');
+  marker.classList.remove('stopped');
+  swingActive = true;
+  statusDisplay.textContent = 'Attack ready: hit the swing bar!';
+}
+
+function closeSwingBar() {
+  if (!swingBarPanel || !swingBar) return;
+  swingBarPanel.classList.add('hidden');
+  marker.classList.add('stopped');
+  swingActive = false;
+}
+
+function resolveSwingAttack() {
+  if (!swingActive || !combatManager.enemy || !combatManager.enemy.isAlive()) return;
+
+  const hitRect = hitZone.getBoundingClientRect();
+  const critRect = critZone.getBoundingClientRect();
+  const markerRect = marker.getBoundingClientRect();
+  const markerCenter = markerRect.left + markerRect.width / 2;
+
+  let message = `${player.name} misses the swing!`;
+  let damage = 0;
+  let isCrit = false;
+
+  if (markerCenter >= hitRect.left && markerCenter <= hitRect.right) {
+    damage = player.calculateWeaponDamage();
+    isCrit = markerCenter >= critRect.left && markerCenter <= critRect.right;
+    if (isCrit) {
+      damage = Math.round(damage * 1.8);
+      message = `${player.name} lands a critical hit for ${damage}!`;
     } else {
-      panel.classList.add('hidden');
+      message = `${player.name} hits ${combatManager.enemy.name} for ${damage} damage.`;
     }
+  }
+
+  if (damage > 0) {
+    if (Math.random() < dodgeChance(combatManager.enemy.speed)) {
+      message = `${combatManager.enemy.name} dodges the attack.`;
+      damage = 0;
+    }
+  }
+
+  if (damage > 0) {
+    const defendEffect = combatManager.enemy.statusEffects.find(status => status.type === 'defend');
+    if (defendEffect) {
+      damage = Math.max(1, damage - defendEffect.strength);
+      combatManager.enemy.statusEffects = combatManager.enemy.statusEffects.filter(status => status !== defendEffect);
+      combatManager.log(`${combatManager.enemy.name} blocks part of the swing.`);
+    }
+    combatManager.enemy.receiveDamage(damage);
+    if (player.weapon && player.weapon.specialEffect) {
+      combatManager.applyWeaponEffect(player, combatManager.enemy, player.weapon.specialEffect);
+    }
+  }
+
+  combatManager.log(message);
+  closeSwingBar();
+  combatManager.updateStatus();
+
+  if (combatManager.enemy.isAlive() && player.isAlive()) {
+    combatManager.enemyTurn();
+  }
+
+  combatManager.checkBattleEnd();
+  combatManager.updateStatus();
+}
+
+function prepareSwingAttack() {
+  if (!combatManager.inCombat || !combatManager.enemy || !player.isAlive()) return;
+  openSwingBar();
+}
+
+const BIOME_NPC_DATA = {
+  emeraldForest: {
+    title: 'Forest Encounters',
+    subtitle: 'Whispers in the canopy, moss beneath your feet.',
+    theme: {
+      bg: 'rgba(12, 42, 25, 0.96)',
+      border: 'rgba(86, 172, 108, 0.35)',
+      text: '#ecf7e8',
+      accent: '#8de0ae',
+      shadow: 'rgba(22, 66, 35, 0.35)',
+    },
+    npcTypes: {
+      wolf: {
+        name: 'Wolf Guardian',
+        emoji: '🐺',
+        dialogue: {
+          talk: 'The forest watches all who walk beneath its branches.',
+          trade: 'I can spare some healing moss for a price.',
+          quest: 'Find the lost cub and bring it back to the hollow.',
+          leave: 'May leaf and root guide you.',
+        },
+      },
+      elf: {
+        name: 'Forest Elf',
+        emoji: '🧝',
+        dialogue: {
+          talk: 'Welcome, traveler. The glade is peaceful today.',
+          trade: 'I trade rare herbs for stories of the outside world.',
+          quest: 'Help me gather moonflowers before dusk.',
+          leave: 'Go in peace, friend of the woods.',
+        },
+      },
+      grove: {
+        name: 'Grove Sage',
+        emoji: '🌿',
+        dialogue: {
+          talk: 'The ground remembers every footstep.',
+          trade: 'My remedies are crafted from ancient leaves.',
+          quest: 'Speak with the old oak and learn the forest’s secret.',
+          leave: 'Return when the wind whispers your name.',
+        },
+      },
+      fox: {
+        name: 'Fox Trickster',
+        emoji: '🦊',
+        dialogue: {
+          talk: 'A little cleverness goes a long way in this forest.',
+          trade: 'I have trinkets that glow in moonlight.',
+          quest: 'Steal a lantern from the camp and bring it to me.',
+          leave: 'Watch your step—paths shift after dark.',
+        },
+      },
+    },
+  },
+  sunbleachedDunes: {
+    title: 'Desert Parley',
+    subtitle: 'Heat shimmers over sand, and every word carries weight.',
+    theme: {
+      bg: 'rgba(65, 39, 12, 0.96)',
+      border: 'rgba(209, 161, 76, 0.35)',
+      text: '#fff5dc',
+      accent: '#ffd27a',
+      shadow: 'rgba(94, 60, 16, 0.35)',
+    },
+    npcTypes: {
+      camel: {
+        name: 'Desert Caravan',
+        emoji: '🐪',
+        dialogue: {
+          talk: 'The dunes shift, but a caravan endures.',
+          trade: 'I carry spices and water for those who bargain well.',
+          quest: 'Escort my caravan through the burning wastes.',
+          leave: 'May the sun favor your journey.',
+        },
+      },
+      djinn: {
+        name: 'Desert Djinn',
+        emoji: '🧞',
+        dialogue: {
+          talk: 'I offer a single wish, but choose carefully.',
+          trade: 'I can trade magic for memories.',
+          quest: 'Recover the glass lamp stolen from my shrine.',
+          leave: 'Do not undervalue the silence of the desert.',
+        },
+      },
+      dune: {
+        name: 'Sandward Nomad',
+        emoji: '🏜️',
+        dialogue: {
+          talk: 'The dunes hide both treasure and danger.',
+          trade: 'I have heat-resistant cloaks for sale.',
+          quest: 'Retrieve the buried relic under the northern dune.',
+          leave: 'Stay sharp; the desert is not forgiving.',
+        },
+      },
+      blade: {
+        name: 'Scimitar Scout',
+        emoji: '🗡️',
+        dialogue: {
+          talk: 'A blade can open doors words cannot.',
+          trade: 'I sell weapons forged in sun-fire.',
+          quest: 'Deliver a message to the oasis chief.',
+          leave: 'Go with steady feet and a cooler head.',
+        },
+      },
+    },
+  },
+  frostfallPlains: {
+    title: 'Frostbound Visitors',
+    subtitle: 'Cold air bites and every breath smells of ice.',
+    theme: {
+      bg: 'rgba(10, 24, 43, 0.96)',
+      border: 'rgba(110, 174, 228, 0.32)',
+      text: '#e9f6ff',
+      accent: '#92d2ff',
+      shadow: 'rgba(18, 40, 68, 0.35)',
+    },
+    npcTypes: {
+      ice: {
+        name: 'Ice Warden',
+        emoji: '🧊',
+        dialogue: {
+          talk: 'The frost will hold if you respect it.',
+          trade: 'I trade cool stones for warm tales.',
+          quest: 'Bring me a frozen ember from the glacier.',
+          leave: 'Keep your flame close to your heart.',
+        },
+      },
+      bear: {
+        name: 'Snow Bear',
+        emoji: '🐻‍❄️',
+        dialogue: {
+          talk: 'My paws know every drift and ridge.',
+          trade: 'I trade furs and safe passage.',
+          quest: 'Chase away the ice wolves from my den.',
+          leave: 'Travel swiftly, but do not linger in the cold.',
+        },
+      },
+      snow: {
+        name: 'Frost Seeker',
+        emoji: '❄️',
+        dialogue: {
+          talk: 'Snow is the forest’s quiet cloak.',
+          trade: 'I can offer frost resistance potions.',
+          quest: 'Find the frozen lantern in the blizzard.',
+          leave: 'May the cold never numb your courage.',
+        },
+      },
+      wizard: {
+        name: 'Winter Sage',
+        emoji: '🧙‍♂️',
+        dialogue: {
+          talk: 'Magic and ice are brothers in these lands.',
+          trade: 'Wisdom comes at the cost of a secret.',
+          quest: 'Deliver this runestone to the hidden shrine.',
+          leave: 'Return when the sun thaws the north.',
+        },
+      },
+    },
+  },
+  emberRidge: {
+    title: 'Blazing Confrontations',
+    subtitle: 'The air glows red and danger is always close.',
+    theme: {
+      bg: 'rgba(45, 16, 10, 0.96)',
+      border: 'rgba(255, 112, 62, 0.35)',
+      text: '#ffe8d4',
+      accent: '#ff8a42',
+      shadow: 'rgba(86, 32, 18, 0.35)',
+    },
+    npcTypes: {
+      flame: {
+        name: 'Fire Herald',
+        emoji: '🔥',
+        dialogue: {
+          talk: 'This ridge is alive with burning fury.',
+          trade: 'I sell ember stones and heated blades.',
+          quest: 'Cool the molten river and free the trapped miner.',
+          leave: 'Don’t let the blaze consume you.',
+        },
+      },
+      dragon: {
+        name: 'Lava Drake',
+        emoji: '🐉',
+        dialogue: {
+          talk: 'A dragon speaks only to those who dare.',
+          trade: 'I can grant you a scale for a favor.',
+          quest: 'Recover the dragon’s stolen egg.',
+          leave: 'Fly away before the embers strike.',
+        },
+      },
+      stone: {
+        name: 'Magma Warden',
+        emoji: '🪨',
+        dialogue: {
+          talk: 'Rock and flame shape this place.',
+          trade: 'I trade rare ores for brave deeds.',
+          quest: 'Quell the fire geyser east of the ridge.',
+          leave: 'Watch the ground beneath your feet.',
+        },
+      },
+      demon: {
+        name: 'Ash Fiend',
+        emoji: '😈',
+        dialogue: {
+          talk: 'I enjoy the heat of conflict.',
+          trade: 'I accept souls in exchange for power.',
+          quest: 'Steal the ember crown from the kiln.',
+          leave: 'Leave now, before the flames answer you.',
+        },
+      },
+    },
+  },
+  duskMarket: {
+    title: 'Market Exchanges',
+    subtitle: 'Lanterns glow as merchants haggle and secrets trade hands.',
+    theme: {
+      bg: 'rgba(35, 17, 43, 0.96)',
+      border: 'rgba(150, 94, 193, 0.35)',
+      text: '#f1e6ff',
+      accent: '#d2a0ff',
+      shadow: 'rgba(53, 22, 66, 0.35)',
+    },
+    npcTypes: {
+      eye: {
+        name: 'Mystic Merchant',
+        emoji: '🧿',
+        dialogue: {
+          talk: 'I see more than what the eye reveals.',
+          trade: 'I sell charms and glimpses of fate.',
+          quest: 'Deliver this token to the hidden stall.',
+          leave: 'May fortune watch over you.',
+        },
+      },
+      thread: {
+        name: 'Silk Weaver',
+        emoji: '🧵',
+        dialogue: {
+          talk: 'Every cloth has a story woven in it.',
+          trade: 'I trade rare fabrics for interesting stories.',
+          quest: 'Find the lost spool of moonthread.',
+          leave: 'Walk softly through the market.',
+        },
+      },
+      coin: {
+        name: 'Coin Broker',
+        emoji: '💰',
+        dialogue: {
+          talk: 'Money greases every exchange.',
+          trade: 'I buy and sell valuables at fair rates.',
+          quest: 'Locate the missing merchant ledger.',
+          leave: 'Keep your purse close.',
+        },
+      },
+      stalls: {
+        name: 'Market Vendor',
+        emoji: '🧔‍♂️',
+        dialogue: {
+          talk: 'Welcome to the dusk market.',
+          trade: 'I offer exotic goods from distant lands.',
+          quest: 'Bring me a rare spice from the spice stall.',
+          leave: 'Come back when the lanterns are full.',
+        },
+      },
+    },
+  },
+};
+
+const NPC_ACTIONS = ['Talk', 'Trade', 'Quest', 'Leave'];
+let currentNpcEntry = null;
+
+function normalizeBiomeKey(biome) {
+  if (!biome) return null;
+  const normalized = biome.toString().trim().toLowerCase().replace(/\s+/g, '');
+  return {
+    'emeraldforest': 'emeraldForest',
+    'sunbleacheddunes': 'sunbleachedDunes',
+    'frostfallplains': 'frostfallPlains',
+    'emberridge': 'emberRidge',
+    'duskmarket': 'duskMarket',
+  }[normalized] || normalized;
+}
+
+function openNPCUI(biome, npcType) {
+  const biomeKey = normalizeBiomeKey(biome);
+  const biomeData = BIOME_NPC_DATA[biomeKey];
+  if (!biomeData) {
+    console.warn('Unknown biome for NPC UI:', biome);
+    return;
+  }
+
+  const availableTypes = biomeData.npcTypes;
+  const npc = availableTypes[npcType] || availableTypes[npcType?.toLowerCase()] || Object.values(availableTypes)[0];
+  if (!npc) {
+    console.warn('Unknown NPC type for biome:', npcType, biomeKey);
+    return;
+  }
+
+  currentNpcEntry = { biome: biomeKey, npcType, npc, biomeData };
+
+  const panel = document.getElementById('npc-ui');
+  const titleEl = document.getElementById('npcUiTitle');
+  const subtitleEl = document.getElementById('npcUiSubtitle');
+  const avatarEl = document.getElementById('npcUiAvatar');
+  const nameEl = document.getElementById('npcUiName');
+  const dialogueEl = document.getElementById('npcUiDialogue');
+  const actionsEl = document.getElementById('npcUiActions');
+
+  titleEl.textContent = biomeData.title;
+  subtitleEl.textContent = biomeData.subtitle;
+  avatarEl.textContent = npc.emoji;
+  nameEl.textContent = npc.name;
+  dialogueEl.textContent = npc.dialogue.talk || 'The NPC awaits your choice.';
+
+  actionsEl.innerHTML = '';
+  NPC_ACTIONS.forEach((action) => {
+    const button = document.createElement('button');
+    button.textContent = action;
+    button.type = 'button';
+    button.addEventListener('click', () => handleNpcAction(action));
+    actionsEl.appendChild(button);
   });
+
+  panel.style.setProperty('--npc-bg', biomeData.theme.bg);
+  panel.style.setProperty('--npc-border', biomeData.theme.border);
+  panel.style.setProperty('--npc-text', biomeData.theme.text);
+  panel.style.setProperty('--npc-shadow', biomeData.theme.shadow);
+
+  panel.classList.remove('hidden');
+  panel.setAttribute('aria-hidden', 'false');
+}
+
+function handleNpcAction(action) {
+  if (!currentNpcEntry) return;
+  const dialogue = currentNpcEntry.npc.dialogue[action.toLowerCase()] || 'The NPC remains silent.';
+  const dialogueEl = document.getElementById('npcUiDialogue');
+  dialogueEl.textContent = dialogue;
+
+  if (action === 'Leave') {
+    closeNPCUI();
+  }
+}
+
+function closeNPCUI() {
+  const panel = document.getElementById('npc-ui');
+  if (!panel) return;
+  panel.classList.add('hidden');
+  panel.setAttribute('aria-hidden', 'true');
+
+  document.getElementById('npcUiTitle').textContent = 'NPC Encounter';
+  document.getElementById('npcUiSubtitle').textContent = 'Meet someone new in the region.';
+  document.getElementById('npcUiAvatar').textContent = '🧝';
+  document.getElementById('npcUiName').textContent = 'NPC Name';
+  document.getElementById('npcUiDialogue').textContent = 'The NPC stands before you, waiting to speak.';
+  document.getElementById('npcUiActions').innerHTML = '';
+  currentNpcEntry = null;
+}
+
+function togglePanel(id) {
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  panel.classList.toggle('hidden');
 }
 
 function changeLocation(locationId) {
@@ -768,7 +1201,7 @@ function purchaseItem(itemId) {
 }
 
 attackButton.addEventListener('click', () => {
-  combatManager.resolvePlayerAction('attack');
+  prepareSwingAttack();
   updateUi();
 });
 
@@ -786,6 +1219,14 @@ specialButton.addEventListener('click', () => {
   combatManager.resolvePlayerAction('special');
   updateUi();
 });
+
+if (swingBar) {
+  swingBar.addEventListener('click', () => {
+    if (swingActive) {
+      resolveSwingAttack();
+    }
+  });
+}
 
 travelButton.addEventListener('click', () => travelToArea());
 moveButton.addEventListener('click', () => moveForward());

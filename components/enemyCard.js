@@ -17,6 +17,10 @@ const DIFFICULTY_BORDER = {
 window.showEnemyCard = function(enemy) {
   if (!enemyCard || !enemyCardPanel) return;
 
+  enemyPortrait.onerror = function() {
+    enemyPortrait.onerror = null;
+    enemyPortrait.src = 'assets/enemies/placeholder.svg';
+  };
   enemyPortrait.src = enemy.enemyImage || 'assets/enemies/placeholder.svg';
   enemyPortrait.alt = `${enemy.name} portrait`;
   enemyNameLabel.textContent = enemy.name;

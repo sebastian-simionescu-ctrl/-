@@ -104,6 +104,107 @@ button:disabled {
   margin-top: 6px;
 }
 
+.npc-ui {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(100%, 520px);
+  background: var(--npc-bg, rgba(15, 25, 30, 0.96));
+  border: 1px solid var(--npc-border, rgba(116, 222, 138, 0.28));
+  box-shadow: 0 24px 80px var(--npc-shadow, rgba(0, 0, 0, 0.32));
+  border-radius: 24px;
+  padding: 24px;
+  color: var(--npc-text, #f8fdf6);
+  backdrop-filter: blur(10px);
+  z-index: 55;
+}
+
+.npc-ui.hidden {
+  display: none !important;
+}
+
+.npc-ui__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.npc-ui__title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.npc-ui__subtitle {
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.npc-ui__close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.npc-ui__avatar {
+  font-size: 4rem;
+  text-align: center;
+  margin: 0 auto 14px;
+  width: fit-content;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 18px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.npc-ui__name {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.npc-ui__dialogue {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  min-height: 110px;
+}
+
+.npc-ui__dialogue p {
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.npc-ui__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.npc-ui__actions button {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border-radius: 14px;
+  padding: 12px 14px;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.npc-ui__actions button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .game-main {
   display: grid;
   grid-template-columns: minmax(260px, 320px) minmax(420px, 1fr) minmax(260px, 300px);
@@ -253,9 +354,9 @@ button:disabled {
   border-radius: 18px;
   border: 2px solid var(--accent);
   background: rgba(255, 255, 255, 0.06);
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.3s ease;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s ease;
 }
 
 .enemy-card-panel {
@@ -264,12 +365,12 @@ button:disabled {
 
 .enemy-card.card-hidden {
   opacity: 0;
-  transform: translateY(12px);
+  transform: scale(0.9);
 }
 
 .enemy-card.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1);
 }
 
 .enemy-card__portrait {
@@ -343,6 +444,63 @@ button:disabled {
 
 .log-panel {
   flex: 1;
+}
+
+.swing-bar-panel {
+  margin: 18px 0;
+}
+
+.swing-bar-panel .swing-instruction {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+#swing-bar {
+  position: relative;
+  width: 100%;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#swing-bar > div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+#hit-zone {
+  left: 18%;
+  width: 44%;
+  background: rgba(46, 204, 113, 0.18);
+}
+
+#crit-zone {
+  left: 37%;
+  width: 18%;
+  background: rgba(255, 196, 0, 0.26);
+}
+
+#marker {
+  left: 4%;
+  width: 10px;
+  border-radius: 999px;
+  background: var(--button-bg);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  animation: marker-swing 1.4s linear infinite alternate;
+}
+
+#marker.stopped {
+  animation-play-state: paused;
+}
+
+@keyframes marker-swing {
+  0% { left: 4%; }
+  100% { left: 86%; }
 }
 
 .logs {

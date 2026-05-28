@@ -16,16 +16,17 @@
         <p class="subtitle">Explore the overworld, battle enemies, and upgrade your hero.</p>
       </div>
       <div class="panel-controls">
-        <button class="secondary-button" onclick="togglePanel('world-panel')">Map</button>
+        <button class="secondary-button" onclick="togglePanel('map-panel')">Map</button>
         <button class="secondary-button" onclick="togglePanel('inventory-panel')">Inventory</button>
         <button class="secondary-button" onclick="togglePanel('shop-panel')">Shop</button>
         <button class="secondary-button" onclick="togglePanel('combat-panel')">Combat</button>
+        <button class="secondary-button" onclick="togglePanel('enemy-card-panel')">Enemy Card</button>
       </div>
       <div id="status">Ready for adventure</div>
     </header>
 
     <div class="game-main">
-      <section id="world-panel" class="panel world-panel">
+      <section id="map-panel" class="panel world-panel hidden">
         <h2>World Map</h2>
         <div class="locations" id="locationList"></div>
         <div class="area-summary">
@@ -54,7 +55,7 @@
         <div id="enemy-card-panel" class="enemy-card-panel hidden">
           <div class="enemy-card card-hidden" id="enemyCard">
           <div class="enemy-card__portrait" id="enemyPortraitContainer">
-            <img id="enemy-image" src="" alt="" />
+            <img id="enemy-image" src="" alt="" onerror="this.onerror=null;this.src='assets/enemies/placeholder.svg';" />
           </div>
           <div class="enemy-card__content">
             <div class="enemy-card__header">
@@ -70,6 +71,14 @@
             <div class="enemy-card__hp-text" id="enemyCardHpText">0 / 0 HP</div>
           </div>
         </div>
+
+        <div id="swing-bar-panel" class="swing-bar-panel hidden">
+          <p class="swing-instruction">Click the bar when the marker reaches the hit zone. Crit zone deals extra damage.</p>
+          <div id="swing-bar">
+            <div id="hit-zone"></div>
+            <div id="crit-zone"></div>
+            <div id="marker"></div>
+          </div>
         </div>
 
         <div class="combat-actions">
@@ -103,6 +112,22 @@
         </section>
       </aside>
     </div>
+  </div>
+
+  <div id="npc-ui" class="npc-ui hidden" aria-hidden="true">
+    <div class="npc-ui__header">
+      <div>
+        <div class="npc-ui__title" id="npcUiTitle">NPC Encounter</div>
+        <div class="npc-ui__subtitle" id="npcUiSubtitle">Meet someone new in the region.</div>
+      </div>
+      <button class="npc-ui__close" onclick="closeNPCUI()" aria-label="Close NPC panel">✕</button>
+    </div>
+    <div class="npc-ui__avatar" id="npcUiAvatar">🧝</div>
+    <div class="npc-ui__name" id="npcUiName">NPC Name</div>
+    <div class="npc-ui__dialogue">
+      <p id="npcUiDialogue">The NPC stands before you, waiting to speak.</p>
+    </div>
+    <div class="npc-ui__actions" id="npcUiActions"></div>
   </div>
 
   <script src="data/enemies.js"></script>
